@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/hex"
-	"fmt"
 	"log"
 	"net"
 
@@ -24,8 +22,9 @@ type Router struct {
 }
 
 func (r *Router) handleUDP(src *net.UDPAddr, n int, b []byte) {
-	if src != r.local {
-		log.Printf("UDP: %s %s\n", src, hex.Dump(b[:n]))
+	if src.String() != r.local.String() {
+		log.Printf("UDP from: %s\n", src)
+		// fmt.Print(hex.Dump(b[:n])))
 		r.nc.PublishMsg(&nats.Msg{
 			Subject: "ch1",
 			Data:    b[:n],
@@ -37,8 +36,9 @@ func (r *Router) handleUDP(src *net.UDPAddr, n int, b []byte) {
 }
 
 func (r *Router) handleNATS(m *nats.Msg) {
-	fmt.Printf("NATS: %s\n", string(m.Data))
 	if m.Header["uuid"][0] != r.uuid {
+		log.Printf("NATS: %s\n", m.Subject)
+		// fmt.Print(hex.Dump(m.Data))
 		r.mc.Write(m.Data)
 	}
 }
