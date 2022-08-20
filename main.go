@@ -7,6 +7,7 @@ import (
 	"net"
 
 	"github.com/dmichael/go-multicast/multicast"
+	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 )
 
@@ -16,30 +17,44 @@ const (
 )
 
 type Router struct {
-	nc *nats.Conn
-	mc *net.UDPConn
+	uuid  string
+	local net.Addr
+	nc    *nats.Conn
+	mc    *net.UDPConn
 }
 
 func (r *Router) handleUDP(src *net.UDPAddr, n int, b []byte) {
-	log.Printf("UDP: %s %s\n", src, hex.Dump(b[:n]))
-	r.nc.Publish("ch1", b[:n])
+	if src != r.local {
+		log.Printf("UDP: %s %s\n", src, hex.Dump(b[:n]))
+		r.nc.PublishMsg(&nats.Msg{
+			Subject: "ch1",
+			Data:    b[:n],
+			Header: map[string][]string{
+				"uuid": []string{r.uuid},
+			},
+		})
+	}
 }
 
 func (r *Router) handleNATS(m *nats.Msg) {
 	fmt.Printf("NATS: %s\n", string(m.Data))
-	r.mc.Write(m.Data)
+	if m.Header["uuid"][0] != r.uuid {
+		r.mc.Write(m.Data)
+	}
 }
 
 func main() {
-	nc, _ := nats.Connect(nats.DefaultURL)
+	nc, _ := nats.Connect("nats://demo.nats.io:4222")
 	conn, err := multicast.NewBroadcaster(addr)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	router := &Router{
-		nc: nc,
-		mc: conn,
+		uuid:  uuid.New().String(),
+		local: conn.LocalAddr(),
+		nc:    nc,
+		mc:    conn,
 	}
 
 	nc.Subscribe("ch1", router.handleNATS)
