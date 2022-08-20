@@ -37,7 +37,7 @@ func (r *Router) handleUDP(src *net.UDPAddr, n int, b []byte) {
 
 func (r *Router) handleNATS(m *nats.Msg) {
 	if m.Header["uuid"][0] != r.uuid {
-		log.Printf("NATS: %s\n", m.Subject)
+		log.Printf("NATS: %s-%s\n", m.Subject, m.Header["uuid"][0])
 		// fmt.Print(hex.Dump(m.Data))
 		r.mc.Write(m.Data)
 	}
