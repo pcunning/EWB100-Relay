@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net"
 
@@ -44,7 +46,16 @@ func (r *Router) handleNATS(m *nats.Msg) {
 }
 
 func main() {
-	nc, _ := nats.Connect("nats://demo.nats.io:4222")
+	server := flag.String("c", "nats://demo.nats.io:4222", "nats connection string")
+	flag.Parse()
+
+	nc, err := nats.Connect(*server)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Connected to %s\n", *server)
+
 	conn, err := multicast.NewBroadcaster(addr)
 	if err != nil {
 		log.Fatal(err)
