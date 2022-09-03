@@ -36,7 +36,7 @@ jobs:
         GOOS: darwin
         GOARCH: arm64
         
-    - name: Build 
+    - name: Build linux-mips-soft
       run: go build -v -o relay-linux-mips-soft -trimpath -ldflags="-s -w" ./...
       env:
         GOOS: linux
