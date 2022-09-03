@@ -34,4 +34,9 @@ jobs:
       env:
         GOOS: darwin
         GOARCH: arm64
+    
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Artifacts
+        path: relay-*
 
