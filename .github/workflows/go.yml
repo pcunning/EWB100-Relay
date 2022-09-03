@@ -35,6 +35,13 @@ jobs:
       env:
         GOOS: darwin
         GOARCH: arm64
+        
+    - name: Build 
+      run: go build -v -o relay-linux-mips-soft -trimpath -ldflags="-s -w" ./...
+      env:
+        GOOS: linux
+        GOARCH: mips
+        GOMIPS: softfloat
     
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
@@ -46,4 +53,5 @@ jobs:
           relay-rpi
           relay-osx
           relay-osx-arm
+          relay-linux-mips-soft
 
