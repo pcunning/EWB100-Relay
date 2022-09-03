@@ -1,0 +1,37 @@
+name: Go
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.18
+
+    - name: Build RPi
+      run: go build -v -o relay-rpi ./...
+      env:
+        GOOS: linux
+        GOARCH: arm
+        GOARM: 5
+
+    - name: Build OSX-amd64
+      run: go build -v -o relay-osx ./...
+      env:
+        GOOS: darwin
+        GOARCH: amd64
+        
+    - name: Build OSX-arm64
+      run: go build -v -o relay-osx-arm ./...
+      env:
+        GOOS: darwin
+        GOARCH: arm64
+
