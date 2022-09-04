@@ -32,6 +32,7 @@ func (r *Router) handleUDP(src *net.UDPAddr, n int, b []byte) {
 			Data:    b[:n],
 			Header: map[string][]string{
 				"uuid": []string{r.uuid},
+				"user": []string{r.nc.ConnectedUrlRedacted()},
 			},
 		})
 	}
@@ -39,7 +40,11 @@ func (r *Router) handleUDP(src *net.UDPAddr, n int, b []byte) {
 
 func (r *Router) handleNATS(m *nats.Msg) {
 	if m.Header["uuid"][0] != r.uuid {
-		log.Printf("NATS: %s-%s\n", m.Subject, m.Header["uuid"][0])
+		if len(m.Header["user"]) > 0 {
+			log.Printf("NATS: %s-%s\n", m.Subject, m.Header["user"][0])
+		} else {
+			log.Printf("NATS: %s-%s\n", m.Subject, m.Header["uuid"][0])
+		}
 		// fmt.Print(hex.Dump(m.Data))
 		r.mc.Write(m.Data)
 	}
